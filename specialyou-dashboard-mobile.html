@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#9b1c3a">
+<title>SpecialYou — Sales Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --brand:#9b1c3a; --brand-light:#b82244; --brand-bg:#fdf2f4;
+  --bg:#f7f8fa; --white:#fff; --border:#e8eaed;
+  --text:#1a1d23; --text2:#6b7280; --text3:#9ca3af;
+  --green:#16a34a; --green-bg:#f0fdf4;
+  --red:#dc2626; --red-bg:#fef2f2;
+  --yellow:#d97706; --yellow-bg:#fffbeb;
+  --blue:#2563eb;
+  --sidebar-w:220px;
+  --bottom-nav-h:62px;
+  --topbar-h:54px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{height:100%;height:-webkit-fill-available;}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;
+  min-height:100vh;min-height:-webkit-fill-available;
+  overflow-x:hidden;
+  /* Android Chrome address bar fix */
+  -webkit-text-size-adjust:100%;
+}
+
+/* ══════════════════════════════
+   LOGIN
+══════════════════════════════ */
+/* LOGIN — Android safe */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:row;
+  overflow-y:auto;overflow-x:hidden;
+}
+
+/* Desktop: side by side */
+.login-left{width:51%;background:var(--brand);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;position:relative;overflow:hidden;min-height:100%;}
+.login-left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 30% 40%,rgba(255,255,255,.06) 0%,transparent 60%);}
+.ll-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;}
+.login-logo-box{background:white;border-radius:16px;width:150px;height:150px;display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.login-logo-inner{display:flex;flex-direction:column;align-items:center;}
+.login-logo-inner .heart{font-size:20px;color:var(--brand);margin-bottom:3px;}
+.login-logo-inner .wordmark{font-size:22px;font-weight:800;color:var(--brand);}
+.login-tagline{text-align:center;color:rgba(255,255,255,.9);}
+.login-tagline h2{font-size:24px;font-weight:800;margin-bottom:8px;color:white;}
+.login-tagline p{font-size:13px;opacity:.8;max-width:280px;line-height:1.6;}
+.platform-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:24px;justify-content:center;}
+.chip{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 12px;font-size:11px;color:white;font-weight:500;}
+
+.login-right{flex:1;background:#f8f9fb;display:flex;align-items:center;justify-content:center;padding:32px 24px;}
+.login-card{width:100%;max-width:360px;background:white;border-radius:16px;padding:32px 28px;box-shadow:0 4px 24px rgba(0,0,0,.08);}
+.login-card h3{font-size:20px;font-weight:800;margin-bottom:4px;}
+.login-card>p{color:var(--text2);font-size:13px;margin-bottom:22px;}
+.form-group{margin-bottom:13px;}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;}
+.input-wrap{position:relative;}
+.input-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;}
+.form-group input{width:100%;padding:12px 38px;border:1.5px solid var(--border);border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:var(--text);background:white;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.form-group input:focus{border-color:var(--brand);}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:4px;}
+.login-btn{width:100%;padding:14px;background:var(--brand);border:none;border-radius:10px;color:white;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;transition:background .15s;}
+.login-btn:active{background:var(--brand-light);}
+.login-hint{margin-top:14px;padding:10px 12px;background:#f8f9fb;border-radius:8px;font-size:11px;color:var(--text2);text-align:center;font-family:'DM Mono',monospace;line-height:1.6;}
+.login-error{color:var(--red);font-size:12px;text-align:center;margin-top:8px;min-height:16px;}
+
+/* DASHBOARD — Android fix: don't use height:100vh + overflow:hidden together */
+#dashboard{display:none;min-height:100vh;min-height:-webkit-fill-available;}
+#dashboard.show{display:flex;flex-direction:row;}
+
+/* Sidebar */
+.sidebar{
+  width:var(--sidebar-w);
+  height:100vh;height:-webkit-fill-available;
+  background:white;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  flex-shrink:0;overflow-y:auto;position:sticky;top:0;
+}
+.sidebar-logo{padding:16px;border-bottom:1px solid var(--border);}
+.logo-row{display:flex;align-items:center;gap:8px;}
+.logo-mark{width:30px;height:30px;background:var(--brand);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;}
+.logo-text{font-size:14px;font-weight:800;color:var(--brand);}
+nav.sidenav{padding:10px 8px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;margin-bottom:2px;user-select:none;}
+.nav-item:hover{background:var(--bg);color:var(--text);}
+.nav-item.active{background:var(--brand-bg);color:var(--brand);font-weight:600;}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sidebar-user{border-top:1px solid var(--border);padding:14px;}
+.user-row{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+.user-av{width:32px;height:32px;border-radius:50%;background:var(--brand);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:700;}
+.user-email{font-size:11px;color:var(--text3);}
+.signout-btn{display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-size:12px;color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;padding:0;transition:color .15s;}
+.signout-btn:hover{color:var(--red);}
+
+/* Main content area */
+.main{
+  flex:1;display:flex;flex-direction:column;
+  min-width:0;min-height:0;
+  /* Don't set height/overflow here - Android Chrome breaks */
+}
+
+/* Topbar - sticky works better than fixed on Android */
+.topbar{
+  background:white;border-bottom:1px solid var(--border);
+  padding:0 16px;height:var(--topbar-h);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+  position:sticky;top:0;z-index:50;
+  /* Android Chrome: prevent topbar from disappearing */
+  -webkit-transform:translateZ(0);transform:translateZ(0);
+}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.hamburger{background:none;border:none;cursor:pointer;padding:6px;color:var(--text2);font-size:20px;display:none;}
+.topbar-title{font-size:16px;font-weight:800;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-wrap{display:flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;color:var(--text3);}
+.search-wrap input{border:none;background:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);width:160px;}
+.notif-btn{position:relative;background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:6px;}
+.notif-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--red);border:2px solid white;}
+
+/* API Status Banner */
+.api-banner{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);flex-shrink:0;}
+.api-banner.live{background:#f0fdf4;color:var(--green);}
+.api-banner.loading{background:var(--yellow-bg);color:var(--yellow);}
+.api-banner.error{background:var(--red-bg);color:var(--red);}
+.api-banner.demo{background:#eff6ff;color:var(--blue);}
+.api-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.api-banner-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.refresh-sm{background:none;border:1px solid currentColor;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;cursor:pointer;color:inherit;font-family:'Plus Jakarta Sans',sans-serif;flex-shrink:0;}
+
+/* Sections scroll - key fix for Android */
+.sections-wrap{
+  flex:1;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  /* Give room for bottom nav */
+  padding-bottom:80px;
+}
+.section{padding:16px;display:none;}
+.section.active{display:block;}
+
+/* ══════════════════════════════
+   COMPONENTS
+══════════════════════════════ */
+
+/* KPI Grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.kpi-card{background:white;border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
+.kpi-card.brand{background:var(--brand);}
+.kpi-card.full{grid-column:1/-1;}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;}
+.kpi-card.brand .kpi-label{color:rgba(255,255,255,.7);}
+.kpi-value{font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1;}
+.kpi-card.brand .kpi-value{color:white;}
+.kpi-change{font-size:11px;font-weight:600;margin-top:5px;}
+.kpi-card.brand .kpi-change{color:rgba(255,255,255,.8);}
+.kpi-icon{position:absolute;right:14px;top:14px;width:30px;height:30px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:15px;}
+.kpi-card.brand .kpi-icon{background:rgba(255,255,255,.15);}
+.up{color:var(--green);} .dn{color:var(--red);} .nt{color:var(--text2);}
+
+/* Alert pills */
+.alert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.alert-pill{border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;border:1px solid;}
+.alert-pill.warn{background:var(--yellow-bg);border-color:#fde68a;}
+.alert-pill.danger{background:var(--red-bg);border-color:#fca5a5;}
+.alert-pill.info{background:#eff6ff;border-color:#bfdbfe;}
+.ap-icon{font-size:16px;margin-bottom:4px;}
+.ap-label{font-size:10px;font-weight:600;color:var(--text2);line-height:1.3;}
+.ap-count{font-size:20px;font-weight:800;margin-top:4px;}
+.alert-pill.warn .ap-count{color:var(--yellow);}
+.alert-pill.danger .ap-count{color:var(--red);}
+.alert-pill.info .ap-count{color:var(--blue);}
+
+/* Chart cards */
+.chart-card{background:white;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.chart-card h4{font-size:13px;font-weight:700;margin-bottom:12px;}
+.chart-meta{font-size:10px;color:var(--text3);margin-top:8px;}
+
+/* Platform scroll list */
+.platform-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.platform-scroll::-webkit-scrollbar{display:none;}
+.plat-card{background:white;border:1px solid var(--border);border-radius:12px;padding:12px 14px;flex-shrink:0;width:130px;cursor:pointer;transition:all .15s;}
+.plat-card.selected{border-color:var(--brand);box-shadow:0 0 0 2px rgba(155,28,58,.1);}
+.plat-av{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white;margin-bottom:8px;}
+.plat-name{font-size:11px;font-weight:700;margin-bottom:2px;}
+.plat-change{font-size:10px;font-weight:600;margin-bottom:4px;}
+.plat-val{font-size:14px;font-weight:800;}
+.plat-source{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-top:3px;}
+.plat-source.live{color:var(--green);}
+.plat-source.manual{color:var(--text3);}
+
+/* Table */
+.table-wrap{background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.table-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.table-head h4{font-size:13px;font-weight:700;}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;min-width:500px;}
+thead th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;background:#fafbfc;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid #f3f4f6;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:active{background:#fafbfc;}
+tbody td{padding:10px 12px;font-size:12px;white-space:nowrap;}
+.sku-code{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;}
+.bg{background:var(--green-bg);color:var(--green);}
+.br{background:var(--red-bg);color:var(--red);}
+.by{background:var(--yellow-bg);color:var(--yellow);}
+.bb{background:#eff6ff;color:var(--blue);}
+.bgr{background:#f3f4f6;color:var(--text2);}
+.bbrand{background:var(--brand-bg);color:var(--brand);}
+
+/* Progress */
+.prog-track{background:#e5e7eb;border-radius:4px;height:5px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;}
+
+/* Targets */
+.target-hero{background:var(--brand);border-radius:12px;padding:20px;margin-bottom:10px;color:white;position:relative;overflow:hidden;}
+.target-hero::before{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08);}
+.th-label{font-size:10px;font-weight:600;opacity:.8;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.th-value{font-size:32px;font-weight:800;margin-bottom:12px;}
+.th-track{background:rgba(255,255,255,.2);border-radius:4px;height:7px;}
+.th-fill{background:white;height:100%;border-radius:4px;}
+.th-icon{position:absolute;right:20px;top:20px;font-size:28px;opacity:.5;}
+.target-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.target-stat{background:white;border:1px solid var(--border);border-radius:12px;padding:14px;}
+.ts-label{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;}
+.ts-value{font-size:20px;font-weight:800;}
+.target-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.tcard{background:white;border:1px solid var(--border);border-radius:10px;padding:12px;}
+.tc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.tc-name{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;}
+.tc-pct{font-size:15px;font-weight:800;}
+.tc-amounts{font-size:10px;color:var(--text2);margin-bottom:6px;}
+
+/* SKU tabs */
+.sku-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
+.sku-tabs::-webkit-scrollbar{display:none;}
+.sku-tab{padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;background:white;color:var(--text2);white-space:nowrap;flex-shrink:0;}
+.sku-tab.active{background:var(--brand);border-color:var(--brand);color:white;}
+
+/* OOS grid */
+.oos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;}
+.oos-card{background:white;border:1px solid var(--border);border-radius:10px;padding:12px;}
+.oos-platform{font-size:11px;font-weight:700;margin-bottom:3px;}
+.oos-count{font-size:20px;font-weight:800;}
+.oos-card.critical .oos-count{color:var(--red);}
+.oos-card.warning .oos-count{color:var(--yellow);}
+.oos-card.ok .oos-count{color:var(--green);}
+
+/* Schedule cards */
+.schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sc-card{background:white;border:1px solid var(--border);border-radius:10px;padding:12px;}
+.sc-time{font-size:10px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Mono',monospace;}
+.sc-task{font-size:12px;font-weight:700;margin-bottom:2px;}
+.sc-desc{font-size:11px;color:var(--text2);}
+.sc-ok{margin-top:6px;font-size:10px;color:var(--green);font-weight:600;}
+
+/* Section header */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-hdr h3{font-size:14px;font-weight:800;}
+.sec-hdr p{font-size:11px;color:var(--text2);}
+
+/* Buttons */
+.add-btn{display:inline-flex;align-items:center;gap:5px;padding:8px 13px;background:var(--brand);border:none;border-radius:8px;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;}
+.add-btn:active{background:var(--brand-light);}
+.outline-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;background:white;border:1.5px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;}
+
+/* Legend */
+.legend{display:flex;flex-direction:column;gap:6px;}
+.legend-row{display:flex;align-items:center;gap:7px;font-size:11px;}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.legend-label{flex:1;color:var(--text2);}
+.legend-val{font-weight:700;font-size:11px;}
+
+/* Donut row */
+.donut-row{display:flex;align-items:center;gap:14px;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.4);align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:20px 20px 0 0;padding:20px 20px 32px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease both;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-drag{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:16px;}
+.modal-field{margin-bottom:12px;}
+.modal-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:var(--text);outline:none;-webkit-appearance:none;background:white;}
+.modal-field input:focus,.modal-field select:focus{border-color:var(--brand);}
+.modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+.btn-brand{padding:13px;background:var(--brand);border:none;border-radius:10px;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
+.btn-brand:active{background:var(--brand-light);}
+.btn-outline2{padding:13px;background:white;border:1.5px solid var(--border);border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
+
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--text);color:white;border-radius:10px;padding:11px 20px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:fadeUp .3s ease;white-space:nowrap;}
+.toast.success{background:var(--green);}
+.toast.error{background:var(--red);}
+@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── MOBILE SIDEBAR OVERLAY ── */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;}
+.sidebar-overlay.open{display:block;}
+
+/* ── BOTTOM NAV (mobile only) ── */
+.bottom-nav{
+  display:none;
+  position:fixed;
+  bottom:0;left:0;right:0;
+  /* Safe area for Android notches */
+  padding-bottom:env(safe-area-inset-bottom, 0px);
+  background:white;
+  border-top:1px solid var(--border);
+  z-index:200;
+  /* Hardware accelerate to prevent overlap glitch */
+  -webkit-transform:translateZ(0);transform:translateZ(0);
+  box-shadow:0 -2px 12px rgba(0,0,0,.06);
+}
+.bottom-nav-inner{display:flex;align-items:center;height:62px;padding:0 4px;}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:6px 0;border-radius:8px;transition:all .15s;color:var(--text3);}
+.bn-item.active{color:var(--brand);}
+.bn-item.active .bn-icon{background:var(--brand-bg);}
+.bn-icon{font-size:18px;width:36px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;}
+.bn-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+
+/* Setup guide */
+.setup-card{background:#f0f4ff;border:1.5px solid #c7d2fe;border-radius:12px;padding:16px;margin-bottom:14px;}
+.setup-card h3{font-size:13px;font-weight:800;color:#3730a3;margin-bottom:10px;}
+.setup-step{display:flex;gap:10px;margin-bottom:10px;background:white;border-radius:10px;padding:12px;border:1px solid #e0e7ff;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--brand);color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px;}
+.step-content h4{font-size:12px;font-weight:700;margin-bottom:2px;}
+.step-content p{font-size:11px;color:var(--text2);line-height:1.6;}
+.step-content code{font-family:'DM Mono',monospace;font-size:10px;background:#f3f4f6;padding:1px 4px;border-radius:3px;color:var(--brand);}
+
+/* ══════════════════════════════
+   RESPONSIVE — ANDROID FIX
+══════════════════════════════ */
+
+@media(max-width:768px){
+  /* LOGIN: stack vertically on mobile */
+  #login-screen{flex-direction:column;overflow-y:auto;}
+  .login-left{
+    width:100%;min-height:auto;padding:24px 20px;
+    flex-direction:row;gap:16px;align-items:center;
+    justify-content:flex-start;
+  }
+  .ll-inner{flex-direction:row;gap:14px;align-items:center;width:100%;}
+  .login-logo-box{width:68px;height:68px;border-radius:10px;flex-shrink:0;margin-bottom:0;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+  .login-logo-inner .heart{font-size:13px;margin-bottom:2px;}
+  .login-logo-inner .wordmark{font-size:14px;}
+  .login-tagline{text-align:left;flex:1;}
+  .login-tagline h2{font-size:17px;margin-bottom:3px;}
+  .login-tagline p{font-size:12px;max-width:none;opacity:.85;}
+  .platform-chips{display:none;}
+  .login-right{
+    flex:1;padding:20px 16px 32px;
+    background:white;
+    align-items:flex-start;
+  }
+  .login-card{
+    box-shadow:none;padding:0;
+    max-width:100%;width:100%;
+  }
+
+  /* DASHBOARD: sidebar slides in from left */
+  #dashboard{display:none;flex-direction:column;}
+  #dashboard.show{display:block;position:relative;}
+
+  .sidebar{
+    position:fixed;
+    left:0;top:0;bottom:0;
+    width:280px;
+    transform:translateX(-100%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    z-index:400;
+    height:100%;
+    /* Android: use -webkit-fill-available */
+    height:-webkit-fill-available;
+    overflow-y:auto;
+  }
+  .sidebar.open{transform:translateX(0);}
+
+  .main{
+    width:100%;
+    display:flex;flex-direction:column;
+    min-height:100vh;min-height:-webkit-fill-available;
+  }
+
+  /* Topbar full width on mobile */
+  .topbar{width:100%;}
+  .hamburger{display:flex!important;}
+  .search-wrap{display:none!important;}
+
+  /* Bottom nav shows */
+  .bottom-nav{display:block!important;}
+
+  /* Sections don't need extra padding-bottom now - bottom nav is fixed */
+  .sections-wrap{padding-bottom:80px;}
+
+  /* Grids */
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:8px;}
+  .alert-grid{grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .target-stats{grid-template-columns:1fr 1fr;}
+  .target-cards{grid-template-columns:1fr 1fr;}
+  .schedule-grid{grid-template-columns:1fr 1fr;}
+  .oos-grid{grid-template-columns:1fr 1fr;}
+
+  /* Tables: allow horizontal scroll, don't shrink */
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{min-width:460px;}
+
+  /* Charts: restrict height */
+  canvas{max-height:200px!important;}
+
+  /* Modal: bottom sheet */
+  .modal-overlay{align-items:flex-end;}
+  .modal{border-radius:20px 20px 0 0;width:100%;max-width:100%;}
+}
+
+@media(max-width:480px){
+  .section{padding:12px 12px 8px;}
+  .kpi-value{font-size:18px;}
+  .kpi-card{padding:12px 14px;}
+  .alert-pill{padding:8px 10px;}
+  .ap-count{font-size:16px;}
+  .ap-label{font-size:9.5px;}
+  .chart-card{padding:12px;}
+  .topbar{padding:0 12px;}
+  .topbar-title{font-size:15px;}
+  .table-wrap{border-radius:10px;}
+  /* Prevent text overflow in table cells */
+  tbody td{font-size:11.5px;padding:9px 10px;}
+  thead th{font-size:9.5px;padding:8px 10px;}
+}
+
+@media(max-width:390px){
+  .kpi-value{font-size:16px;}
+  .kpi-label{font-size:9px;}
+  .ap-label{font-size:9px;}
+  .ap-count{font-size:15px;}
+  .target-cards{grid-template-columns:1fr 1fr;}
+  .tc-pct{font-size:13px;}
+  .section{padding:10px 10px 6px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ LOGIN ══════ -->
+<div id="login-screen">
+  <div class="login-left">
+    <div class="ll-inner">
+      <div class="login-logo-box">
+        <div class="login-logo-inner">
+          <span class="heart">♥</span>
+          <span class="wordmark">SpecialYou</span>
+        </div>
+      </div>
+      <div class="login-tagline">
+        <h2>Sales Dashboard</h2>
+        <p>Track your multi-platform e-commerce performance</p>
+      </div>
+    </div>
+    <div class="platform-chips">
+      <span class="chip">Amazon</span><span class="chip">Flipkart</span>
+      <span class="chip">Myntra</span><span class="chip">Nykaa</span>
+      <span class="chip">Blinkit</span><span class="chip">+7 more</span>
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="login-card">
+      <h3>Welcome back</h3>
+      <p>Sign in to access your dashboard</p>
+      <div class="form-group">
+        <label>Email</label>
+        <div class="input-wrap">
+          <span class="input-icon">✉</span>
+          <input type="email" id="l-email" placeholder="admin@specialyou.in" autocomplete="email">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+          <button class="eye-btn" onclick="togglePwd()" type="button">👁</button>
+        </div>
+      </div>
+      <button class="login-btn" onclick="doLogin()">Sign in →</button>
+      <div class="login-error" id="l-error"></div>
+      <div class="login-hint">admin@specialyou.in<br>Admin@123</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ DASHBOARD ══════ -->
+<div id="dashboard">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-row">
+        <div class="logo-mark">S</div>
+        <div class="logo-text">SpecialYou</div>
+      </div>
+    </div>
+    <nav class="sidenav">
+      <div class="nav-item active" onclick="goNav('overview',this)"><span class="nav-icon">🏠</span>Overview</div>
+      <div class="nav-item" onclick="goNav('platforms',this)"><span class="nav-icon">📊</span>Platforms</div>
+      <div class="nav-item" onclick="goNav('sku',this)"><span class="nav-icon">📦</span>SKU Management</div>
+      <div class="nav-item" onclick="goNav('inventory',this)"><span class="nav-icon">🏭</span>Inventory</div>
+      <div class="nav-item" onclick="goNav('targets',this)"><span class="nav-icon">🎯</span>Targets</div>
+      <div class="nav-item" onclick="goNav('reports',this)"><span class="nav-icon">📋</span>Reports</div>
+      <div class="nav-item" onclick="goNav('setup',this)"><span class="nav-icon">⚙️</span>API Setup</div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-row">
+        <div class="user-av">A</div>
+        <div><div class="user-name">Admin</div><div class="user-email">admin@specialyou.in</div></div>
+      </div>
+      <button class="signout-btn" onclick="doLogout()">↩ Sign out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="openSidebar()" aria-label="Menu">☰</button>
+        <div class="topbar-title" id="page-title">Overview</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-wrap">
+          <span>🔍</span>
+          <input placeholder="Search SKUs...">
+        </div>
+        <button class="notif-btn">🔔<span class="notif-dot"></span></button>
+        <button class="add-btn" onclick="document.getElementById('data-modal').classList.add('open')" style="padding:8px 10px">＋</button>
+      </div>
+    </div>
+
+    <!-- API Banner -->
+    <div class="api-banner demo" id="api-banner">
+      <div class="api-dot"></div>
+      <span class="api-banner-text" id="api-status-text">DEMO MODE — Backend not connected</span>
+      <button class="refresh-sm" onclick="checkBackend()">Connect</button>
+    </div>
+
+    <!-- Scrollable sections -->
+    <div class="sections-wrap">
+
+      <!-- OVERVIEW -->
+      <div class="section active" id="s-overview">
+        <div class="kpi-grid">
+          <div class="kpi-card brand full">
+            <div class="kpi-label">Amazon Revenue (MTD)</div>
+            <div class="kpi-value" id="kpi-revenue">₹36.30L</div>
+            <div class="kpi-change">↑ +13.8% vs last month</div>
+            <div class="kpi-icon">📈</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total Orders</div>
+            <div class="kpi-value" id="kpi-orders">3,262</div>
+            <div class="kpi-change up">↑ +8.4%</div>
+            <div class="kpi-icon">🛒</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Pending</div>
+            <div class="kpi-value" id="kpi-pending">52</div>
+            <div class="kpi-change dn">7 urgent</div>
+            <div class="kpi-icon">⏳</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Late Dispatch</div>
+            <div class="kpi-value" id="kpi-late">7</div>
+            <div class="kpi-change dn">SLA breach</div>
+            <div class="kpi-icon">🚚</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Active Platforms</div>
+            <div class="kpi-value">12</div>
+            <div class="kpi-change nt">All online</div>
+            <div class="kpi-icon">📡</div>
+          </div>
+        </div>
+
+        <div class="alert-grid">
+          <div class="alert-pill warn">
+            <span class="ap-icon">⚠️</span>
+            <span class="ap-label">Out of Stock</span>
+            <span class="ap-count" id="kpi-oos">3</span>
+          </div>
+          <div class="alert-pill danger">
+            <span class="ap-icon">🕐</span>
+            <span class="ap-label">Late Dispatch</span>
+            <span class="ap-count" id="kpi-late2">7</span>
+          </div>
+          <div class="alert-pill info">
+            <span class="ap-icon">🚫</span>
+            <span class="ap-label">Blocked</span>
+            <span class="ap-count">5</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h4>Sales Trend — Last 14 Days <span id="chart-src" style="font-size:10px;color:var(--text3);font-weight:400">Sample</span></h4>
+          <canvas id="trend-chart" height="170"></canvas>
+          <div class="chart-meta" id="chart-meta">Last updated: —</div>
+        </div>
+
+        <div class="chart-card">
+          <h4>Platform Distribution</h4>
+          <div class="donut-row">
+            <canvas id="donut-chart" width="110" height="110" style="flex-shrink:0"></canvas>
+            <div class="legend" id="donut-legend"></div>
+          </div>
+        </div>
+
+        <div class="sec-hdr">
+          <h3>Platform Performance</h3>
+          <button class="outline-btn" onclick="refreshAmazonData()" style="font-size:11px">↻ Refresh</button>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Platform</th><th>Revenue</th><th>Orders</th><th>Growth</th><th>Source</th></tr></thead>
+              <tbody>
+                <tr><td><b>Amazon</b></td><td id="amz-rev">₹2.50L</td><td id="amz-ord">628</td><td><span class="badge bg">+16.0%</span></td><td><span class="badge bg" id="amz-source">📡 API</span></td></tr>
+                <tr><td><b>Flipkart</b></td><td>₹1.82L</td><td>412</td><td><span class="badge br">-6.3%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>TataCliq</b></td><td>₹3.67L</td><td>486</td><td><span class="badge bg">+17.6%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>Nykaa</b></td><td>₹4.45L</td><td>374</td><td><span class="badge br">-8.1%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>Myntra</b></td><td>₹1.20L</td><td>298</td><td><span class="badge bg">+8.8%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>Blinkit</b></td><td>₹3.17L</td><td>520</td><td><span class="badge bg">+6.3%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>Zepto</b></td><td>₹4.64L</td><td>410</td><td><span class="badge bg">+15.8%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>Swiggy</b></td><td>₹2.09L</td><td>388</td><td><span class="badge bg">+15.4%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>JioMart</b></td><td>₹1.40L</td><td>158</td><td><span class="badge bg">+26.0%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>FirstCry</b></td><td>₹4.12L</td><td>268</td><td><span class="badge bg">+0.9%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>Website</b></td><td>₹3.89L</td><td>204</td><td><span class="badge bg">+12.7%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+                <tr><td><b>MNow</b></td><td>₹4.39L</td><td>316</td><td><span class="badge bg">+18.8%</span></td><td><span class="badge bgr">✏️ Manual</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLATFORMS -->
+      <div class="section" id="s-platforms">
+        <div class="sec-hdr"><h3>Platform Analytics</h3><p>Swipe to see all</p></div>
+        <div class="platform-scroll" id="platform-cards"></div>
+        <div class="chart-card">
+          <h4 id="plat-chart-title">Amazon Sales Trend</h4>
+          <canvas id="plat-trend" height="170"></canvas>
+        </div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="kpi-card"><div class="kpi-label">Orders</div><div class="kpi-value" style="font-size:20px" id="plat-orders">628</div></div>
+          <div class="kpi-card"><div class="kpi-label">Returns</div><div class="kpi-value" style="font-size:20px;color:var(--red)" id="plat-returns">31</div></div>
+          <div class="kpi-card"><div class="kpi-label">Ad Spend</div><div class="kpi-value" style="font-size:20px" id="plat-adspend">₹5.6K</div></div>
+          <div class="kpi-card"><div class="kpi-label">Profit</div><div class="kpi-value" style="font-size:20px;color:var(--green)" id="plat-profit">₹70.5K</div></div>
+        </div>
+      </div>
+
+      <!-- SKU -->
+      <div class="section" id="s-sku">
+        <div class="sec-hdr"><h3>SKU Management</h3><button class="outline-btn">⬇ Export</button></div>
+        <div class="sku-tabs">
+          <div class="sku-tab active" onclick="skuTab('profit',this)">💎 Profit</div>
+          <div class="sku-tab" onclick="skuTab('loss',this)">🔻 Loss</div>
+          <div class="sku-tab" onclick="skuTab('blocked',this)">🚫 Blocked</div>
+          <div class="sku-tab" onclick="skuTab('potential',this)">🚀 Potential</div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-head"><h4 id="sku-title">Profit Making SKUs</h4></div>
+          <div class="table-scroll">
+            <table><thead><tr><th>SKU</th><th>Product</th><th>Revenue</th><th>Margin</th><th>Platform</th></tr></thead>
+            <tbody id="sku-tbody"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div class="section" id="s-inventory">
+        <div class="sec-hdr"><h3>Inventory & FC</h3><button class="add-btn">＋ Restock</button></div>
+        <div id="inv-alert" style="background:var(--yellow-bg);border:1px solid #fde68a;border-radius:10px;padding:11px 14px;font-size:12px;font-weight:600;color:#92400e;margin-bottom:12px">
+          ⚠️ <span id="inv-msg">7 SKUs Out of Stock — est. loss ₹18,400/day</span>
+        </div>
+        <div class="sec-hdr"><h3>OOS by Platform</h3></div>
+        <div class="oos-grid" style="margin-bottom:14px">
+          <div class="oos-card critical"><div class="oos-platform">Amazon</div><div class="oos-count" id="oos-amazon">3</div><div style="font-size:10px;color:var(--text2)">SKUs OOS</div></div>
+          <div class="oos-card warning"><div class="oos-platform">Flipkart</div><div class="oos-count">2</div><div style="font-size:10px;color:var(--text2)">Manual</div></div>
+          <div class="oos-card ok"><div class="oos-platform">Nykaa</div><div class="oos-count">0</div><div style="font-size:10px;color:var(--text2)">All stocked</div></div>
+          <div class="oos-card warning"><div class="oos-platform">Myntra</div><div class="oos-count">1</div><div style="font-size:10px;color:var(--text2)">Manual</div></div>
+          <div class="oos-card ok"><div class="oos-platform">Blinkit</div><div class="oos-count">0</div><div style="font-size:10px;color:var(--text2)">All stocked</div></div>
+          <div class="oos-card critical"><div class="oos-platform">TataCliq</div><div class="oos-count">2</div><div style="font-size:10px;color:var(--text2)">Manual</div></div>
+          <div class="oos-card ok"><div class="oos-platform">Zepto</div><div class="oos-count">0</div><div style="font-size:10px;color:var(--text2)">All stocked</div></div>
+          <div class="oos-card warning"><div class="oos-platform">JioMart</div><div class="oos-count">1</div><div style="font-size:10px;color:var(--text2)">Manual</div></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-head"><h4>FC Inventory</h4></div>
+          <div class="table-scroll">
+            <table><thead><tr><th>SKU</th><th>Product</th><th>MUM</th><th>DEL</th><th>BLR</th><th>KOL</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="sku-code">SKU-1042</td><td>Face Wash</td><td>240</td><td>180</td><td style="color:var(--yellow)">42</td><td style="color:var(--red);font-weight:700">0</td><td><span class="badge by">Low KOL</span></td></tr>
+              <tr><td class="sku-code">SKU-1087</td><td>Sunscreen</td><td>160</td><td style="color:var(--yellow)">38</td><td>120</td><td style="color:var(--red);font-weight:700">0</td><td><span class="badge br">OOS</span></td></tr>
+              <tr><td class="sku-code">SKU-2021</td><td>Vit C Serum</td><td>310</td><td>220</td><td>180</td><td>90</td><td><span class="badge bg">Good</span></td></tr>
+              <tr><td class="sku-code">SKU-3041</td><td>Night Cream</td><td style="color:var(--yellow)">28</td><td style="color:var(--red);font-weight:700">0</td><td>75</td><td>60</td><td><span class="badge br">OOS DEL</span></td></tr>
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TARGETS -->
+      <div class="section" id="s-targets">
+        <div class="sec-hdr"><h3>Targets & Progress</h3><button class="add-btn" onclick="document.getElementById('target-modal').classList.add('open')">✏️ Edit</button></div>
+        <div class="target-hero">
+          <div class="th-icon">🎯</div>
+          <div class="th-label">Overall Progress</div>
+          <div class="th-value">71.5%</div>
+          <div class="th-track"><div class="th-fill" style="width:71.5%"></div></div>
+        </div>
+        <div class="target-stats">
+          <div class="target-stat"><div class="ts-label">Total Target</div><div class="ts-value">₹57.07L</div></div>
+          <div class="target-stat"><div class="ts-label">Achieved</div><div class="ts-value" style="color:var(--green)">₹40.81L</div></div>
+        </div>
+        <div style="font-size:11px;font-weight:700;margin-bottom:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px">Platform-wise</div>
+        <div class="target-cards" id="target-grid"></div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="section" id="s-reports">
+        <div class="sec-hdr"><h3>Reports</h3><button class="outline-btn">⬇ Export</button></div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">Weekly Revenue</div><div class="kpi-value" style="font-size:18px">₹8.4L</div><div class="kpi-change up">↑ +11.2%</div></div>
+          <div class="kpi-card"><div class="kpi-label">Weekly Returns</div><div class="kpi-value" style="font-size:18px">₹3.1L</div><div class="kpi-change dn">8.4% rate</div></div>
+          <div class="kpi-card"><div class="kpi-label">Ad Spend</div><div class="kpi-value" style="font-size:18px">₹5.6L</div><div class="kpi-change nt">ROAS 7.6x</div></div>
+          <div class="kpi-card"><div class="kpi-label">Late Orders</div><div class="kpi-value" style="font-size:18px">14</div><div class="kpi-change up">↓ 3 vs last wk</div></div>
+        </div>
+        <div class="sec-hdr" style="margin-top:4px"><h3>Update Schedule</h3></div>
+        <div class="schedule-grid">
+          <div class="sc-card"><div class="sc-time">🕙 10 AM Daily</div><div class="sc-task">Daily Sales</div><div class="sc-desc">All 12 platforms</div><div class="sc-ok">✓ Today 10:02 AM</div></div>
+          <div class="sc-card"><div class="sc-time">🕙 10 AM Daily</div><div class="sc-task">OOS SKUs</div><div class="sc-desc">Alert on new OOS</div><div class="sc-ok">✓ Today 10:02 AM</div></div>
+          <div class="sc-card"><div class="sc-time">🕙 10 AM Monday</div><div class="sc-task">Weekly Sales</div><div class="sc-desc">Full week summary</div><div class="sc-ok">✓ Mon Mar 3</div></div>
+          <div class="sc-card"><div class="sc-time">🕙 10 AM Monday</div><div class="sc-task">Ad Spend</div><div class="sc-desc">ROAS by platform</div><div class="sc-ok">✓ Mon Mar 3</div></div>
+          <div class="sc-card"><div class="sc-time">🕙 10 AM Monday</div><div class="sc-task">Returns Report</div><div class="sc-desc">Returns + recovery</div><div class="sc-ok">✓ Mon Mar 3</div></div>
+          <div class="sc-card"><div class="sc-time">🕙 10 AM Monday</div><div class="sc-task">Late Dispatch</div><div class="sc-desc">SLA breach tracker</div><div class="sc-ok">✓ Mon Mar 3</div></div>
+        </div>
+      </div>
+
+      <!-- API SETUP -->
+      <div class="section" id="s-setup">
+        <div class="setup-card">
+          <h3>🔌 Amazon SP-API Setup</h3>
+          <div class="setup-step"><div class="step-num">1</div><div class="step-content"><h4>Node.js Install Karein</h4><p>Download: <a href="https://nodejs.org" target="_blank" style="color:var(--brand)">nodejs.org</a> — LTS version</p></div></div>
+          <div class="setup-step"><div class="step-num">2</div><div class="step-content"><h4>Backend Setup</h4><p><code>cd specialyou-backend</code><br><code>npm install</code><br><code>copy .env.example .env</code></p></div></div>
+          <div class="setup-step"><div class="step-num">3</div><div class="step-content"><h4>Amazon Credentials</h4><p>sellercentral.amazon.in → Apps & Services → Develop Apps → Add New App Client</p></div></div>
+          <div class="setup-step"><div class="step-num">4</div><div class="step-content"><h4>.env File Fill Karein</h4><p><code>LWA_CLIENT_ID=amzn1.xxx</code><br><code>LWA_CLIENT_SECRET=xxx</code><br><code>LWA_REFRESH_TOKEN=Atzr|xxx</code><br><code>SELLER_ID=Axxx</code></p></div></div>
+          <div class="setup-step"><div class="step-num">5</div><div class="step-content"><h4>Server Start Karein</h4><p><code>node server.js</code><br>Phir is page ko refresh karein ✅</p></div></div>
+        </div>
+        <button class="add-btn" style="width:100%;justify-content:center;padding:14px" onclick="checkBackend()">🔄 Test Connection</button>
+      </div>
+
+    </div><!-- end sections-wrap -->
+
+    <!-- BOTTOM NAV (mobile) -->
+    <nav class="bottom-nav">
+      <div class="bottom-nav-inner">
+        <div class="bn-item active" onclick="bnNav('overview',this)">
+          <div class="bn-icon">🏠</div>
+          <div class="bn-label">Home</div>
+        </div>
+        <div class="bn-item" onclick="bnNav('platforms',this)">
+          <div class="bn-icon">📊</div>
+          <div class="bn-label">Platforms</div>
+        </div>
+        <div class="bn-item" onclick="bnNav('targets',this)">
+          <div class="bn-icon">🎯</div>
+          <div class="bn-label">Targets</div>
+        </div>
+        <div class="bn-item" onclick="bnNav('inventory',this)">
+          <div class="bn-icon">📦</div>
+          <div class="bn-label">Stock</div>
+        </div>
+        <div class="bn-item" onclick="bnNav('reports',this)">
+          <div class="bn-icon">📋</div>
+          <div class="bn-label">Reports</div>
+        </div>
+      </div>
+    </nav>
+
+  </div><!-- end main -->
+</div><!-- end dashboard -->
+
+<!-- Input Data Modal (bottom sheet on mobile) -->
+<div class="modal-overlay" id="data-modal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-title">➕ Input Sales Data</div>
+    <div class="modal-field"><label>Platform</label>
+      <select id="inp-platform">
+        <option>Amazon</option><option>Flipkart</option><option>Nykaa</option>
+        <option>Myntra</option><option>TataCliq</option><option>Website</option>
+        <option>FirstCry</option><option>JioMart</option><option>Blinkit</option>
+        <option>Swiggy</option><option>Zepto</option><option>MNow</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>Report Type</label>
+      <select id="inp-type"><option>Daily Sales</option><option>Weekly Sales</option><option>Ad Spend</option><option>Returns</option></select>
+    </div>
+    <div class="modal-field"><label>Date</label><input type="date" id="inp-date"></div>
+    <div class="modal-field"><label>Revenue / GMV (₹)</label><input type="number" id="inp-revenue" placeholder="e.g. 38400" inputmode="numeric"></div>
+    <div class="modal-field"><label>Orders</label><input type="number" id="inp-orders" placeholder="e.g. 142" inputmode="numeric"></div>
+    <div class="modal-btns">
+      <button class="btn-outline2" onclick="document.getElementById('data-modal').classList.remove('open')">Cancel</button>
+      <button class="btn-brand" onclick="saveManualData()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Target Modal -->
+<div class="modal-overlay" id="target-modal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-title">🎯 Set Monthly Targets</div>
+    <div id="target-modal-body"></div>
+    <div class="modal-btns">
+      <button class="btn-outline2" onclick="document.getElementById('target-modal').classList.remove('open')">Cancel</button>
+      <button class="btn-brand" onclick="saveTargets()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BACKEND_URL='http://localhost:3001';
+const CREDS={'admin@specialyou.in':'Admin@123','manager@specialyou.in':'Manager@123'};
+
+// AUTH
+function togglePwd(){const i=document.getElementById('l-pass');i.type=i.type==='password'?'text':'password';}
+function doLogin(){
+  const e=document.getElementById('l-email').value.trim();
+  const p=document.getElementById('l-pass').value;
+  if(CREDS[e]&&CREDS[e]===p){
+    const ls=document.getElementById('login-screen');
+    ls.style.transition='opacity .35s';ls.style.opacity='0';
+    setTimeout(()=>{
+      ls.style.display='none';
+      const dash=document.getElementById('dashboard');
+      dash.classList.add('show');
+      // Android fix: use block on mobile, flex on desktop
+      dash.style.display=window.innerWidth<=768?'block':'flex';
+      initDashboard();
+    },350);
+  } else {
+    const err=document.getElementById('l-error');err.textContent='✗ Invalid credentials';
+    setTimeout(()=>err.textContent='',3000);
+  }
+}
+document.getElementById('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+function doLogout(){
+  const dash=document.getElementById('dashboard');
+  dash.classList.remove('show');
+  dash.style.display='none';
+  const ls=document.getElementById('login-screen');
+  ls.style.display='flex';ls.style.opacity='1';
+}
+
+// SIDEBAR (mobile)
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  const ov=document.getElementById('sidebar-overlay');
+  ov.classList.add('open');
+  ov.style.zIndex='399';
+  // Prevent body scroll when sidebar open
+  document.body.style.overflow='hidden';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// NAV
+const PAGE_TITLES={overview:'Overview',platforms:'Platforms',sku:'SKU Management',inventory:'Inventory',targets:'Targets',reports:'Reports',setup:'API Setup'};
+function goNav(name,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');
+  if(el){el.classList.add('active');}
+  document.getElementById('page-title').textContent=PAGE_TITLES[name]||name;
+  // Sync bottom nav
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
+  const bnMap={overview:0,platforms:1,targets:2,inventory:3,reports:4};
+  if(bnMap[name]!==undefined){document.querySelectorAll('.bn-item')[bnMap[name]].classList.add('active');}
+  closeSidebar();
+  document.querySelector('.sections-wrap').scrollTop=0;
+}
+
+// Bottom nav
+function bnNav(name,el){
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  // Sync sidebar nav
+  const sideItems=document.querySelectorAll('.nav-item');
+  sideItems.forEach(n=>{n.classList.remove('active');if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'")){n.classList.add('active');}});
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');
+  document.getElementById('page-title').textContent=PAGE_TITLES[name]||name;
+  document.querySelector('.sections-wrap').scrollTop=0;
+}
+
+// API BANNER
+function setBanner(type,msg){
+  const b=document.getElementById('api-banner');b.className='api-banner '+type;
+  document.getElementById('api-status-text').textContent=msg;
+}
+
+async function checkBackend(){
+  setBanner('loading','Connecting...');
+  try{
+    const res=await fetch(`${BACKEND_URL}/api/health`,{signal:AbortSignal.timeout(5000)});
+    if(!res.ok)throw new Error('Server error');
+    const data=await res.json();
+    setBanner('live','✅ LIVE — Amazon SP-API connected!');
+    loadAmazonDashboard();
+  }catch(e){
+    setBanner('demo','DEMO MODE — Start backend: node server.js');
+  }
+}
+
+// AMAZON DATA
+async function loadAmazonDashboard(){
+  try{
+    const res=await fetch(`${BACKEND_URL}/api/amazon/dashboard`);
+    if(!res.ok)throw new Error();
+    const d=await res.json();
+    document.getElementById('kpi-revenue').textContent='₹'+formatAmt(d.mtd.revenue);
+    document.getElementById('kpi-orders').textContent=d.mtd.orders.toLocaleString('en-IN');
+    document.getElementById('kpi-pending').textContent=d.today.pendingOrders;
+    document.getElementById('kpi-late').textContent=d.today.lateOrders;
+    document.getElementById('kpi-late2').textContent=d.today.lateOrders;
+    document.getElementById('amz-rev').textContent='₹'+formatAmt(d.today.revenue);
+    document.getElementById('amz-ord').textContent=d.today.orders;
+    document.getElementById('amz-source').textContent='📡 Live';
+    document.getElementById('oos-amazon').textContent=d.inventory.outOfStockCount;
+    document.getElementById('kpi-oos').textContent=d.inventory.outOfStockCount;
+    document.getElementById('inv-msg').textContent=`${d.inventory.outOfStockCount} SKUs OOS on Amazon`;
+    if(d.salesTrend?.chartData?.length>0)updateTrendChart(d.salesTrend.chartData);
+    document.getElementById('chart-src').textContent='Live API';
+    document.getElementById('chart-meta').textContent='Updated: '+new Date(d.fetchedAt).toLocaleTimeString('en-IN');
+    showToast('✅ Amazon data refreshed!','success');
+  }catch(e){setBanner('demo','DEMO MODE — Backend not connected');}
+}
+
+async function refreshAmazonData(){showToast('Refreshing...','');await loadAmazonDashboard();}
+
+function formatAmt(n){
+  if(!n)return'0';
+  if(n>=100000)return(n/100000).toFixed(2)+'L';
+  if(n>=1000)return(n/1000).toFixed(1)+'K';
+  return n.toFixed(0);
+}
+
+// MANUAL DATA SAVE
+async function saveManualData(){
+  const platform=document.getElementById('inp-platform').value;
+  const revenue=document.getElementById('inp-revenue').value;
+  if(!revenue){showToast('Revenue daalo','error');return;}
+  try{
+    await fetch(`${BACKEND_URL}/api/manual/input`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({platform,revenue:parseFloat(revenue),orders:parseInt(document.getElementById('inp-orders').value)||0,type:document.getElementById('inp-type').value,date:document.getElementById('inp-date').value})});
+    showToast('✅ '+platform+' data saved!','success');
+  }catch(e){showToast('✅ '+platform+' saved (offline)','success');}
+  document.getElementById('data-modal').classList.remove('open');
+}
+
+async function saveTargets(){
+  document.getElementById('target-modal').classList.remove('open');
+  showToast('✅ Targets updated','success');
+}
+
+// CHARTS
+let trendChartObj=null;
+function dateLabels(n){return Array.from({length:n},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(n-1-i));return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});});}
+
+function initTrendChart(){
+  const ctx=document.getElementById('trend-chart').getContext('2d');
+  trendChartObj=new Chart(ctx,{type:'line',data:{labels:dateLabels(14),datasets:[{data:[180000,155000,170000,145000,82000,78000,165000,158000,190000,140000,130000,68000,90000,85000],borderColor:'#9b1c3a',backgroundColor:'rgba(155,28,58,.08)',fill:true,tension:.4,pointRadius:2,pointBackgroundColor:'#9b1c3a',borderWidth:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`₹${c.raw.toLocaleString('en-IN')}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#9ca3af',maxRotation:45}},y:{grid:{color:'#f3f4f6'},ticks:{callback:v=>`₹${(v/1000).toFixed(0)}K`,font:{size:9},color:'#9ca3af'}}}}});
+}
+
+function updateTrendChart(d){if(!trendChartObj)return;trendChartObj.data.labels=d.map(x=>x.date);trendChartObj.data.datasets[0].data=d.map(x=>x.revenue);trendChartObj.update();}
+
+function initDonut(){
+  const dd=[{l:'Amazon',v:2.5,c:'#f59e0b'},{l:'Flipkart',v:1.82,c:'#2563eb'},{l:'Myntra',v:1.2,c:'#7c3aed'},{l:'Nykaa',v:4.45,c:'#db2777'},{l:'TataCliq',v:3.67,c:'#dc2626'},{l:'Website',v:3.89,c:'#0f766e'}];
+  const ctx=document.getElementById('donut-chart').getContext('2d');
+  new Chart(ctx,{type:'doughnut',data:{labels:dd.map(d=>d.l),datasets:[{data:dd.map(d=>d.v),backgroundColor:dd.map(d=>d.c),borderWidth:2,borderColor:'white'}]},options:{plugins:{legend:{display:false}},cutout:'65%'}});
+  document.getElementById('donut-legend').innerHTML=dd.map(d=>`<div class="legend-row"><div class="legend-dot" style="background:${d.c}"></div><div class="legend-label">${d.l}</div><div class="legend-val">₹${d.v}L</div></div>`).join('');
+}
+
+// PLATFORM CARDS
+const PLATS=[
+  {name:'Amazon',abbr:'Am',color:'#f59e0b',revenue:'₹2.50L',change:'+16.0%',up:true,orders:628,returns:31,adspend:'₹5.6K',profit:'₹70.5K',live:true},
+  {name:'Flipkart',abbr:'Fl',color:'#2563eb',revenue:'₹1.82L',change:'-6.3%',up:false,orders:412,returns:24,adspend:'₹3.2K',profit:'₹42.1K',live:false},
+  {name:'TataCliq',abbr:'Ta',color:'#dc2626',revenue:'₹3.67L',change:'+17.6%',up:true,orders:486,returns:18,adspend:'₹4.1K',profit:'₹88.2K',live:false},
+  {name:'Nykaa',abbr:'Ny',color:'#db2777',revenue:'₹4.45L',change:'-8.1%',up:false,orders:374,returns:12,adspend:'₹6.8K',profit:'₹95.4K',live:false},
+  {name:'Myntra',abbr:'My',color:'#7c3aed',revenue:'₹1.20L',change:'+8.8%',up:true,orders:298,returns:41,adspend:'₹2.4K',profit:'₹28.7K',live:false},
+  {name:'Website',abbr:'We',color:'#0f766e',revenue:'₹3.89L',change:'+12.7%',up:true,orders:204,returns:9,adspend:'₹1.8K',profit:'₹82.6K',live:false},
+  {name:'FirstCry',abbr:'Fi',color:'#ea580c',revenue:'₹4.12L',change:'+0.9%',up:true,orders:268,returns:14,adspend:'₹3.9K',profit:'₹76.3K',live:false},
+  {name:'JioMart',abbr:'Ji',color:'#1d4ed8',revenue:'₹1.40L',change:'+26.0%',up:true,orders:158,returns:19,adspend:'₹1.2K',profit:'₹31.8K',live:false},
+  {name:'Blinkit',abbr:'Bl',color:'#ca8a04',revenue:'₹3.17L',change:'+6.3%',up:true,orders:520,returns:7,adspend:'₹5.1K',profit:'₹68.4K',live:false},
+  {name:'Swiggy',abbr:'Sw',color:'#f97316',revenue:'₹2.09L',change:'+15.4%',up:true,orders:388,returns:5,adspend:'₹2.8K',profit:'₹45.2K',live:false},
+  {name:'Zepto',abbr:'Ze',color:'#7c3aed',revenue:'₹4.64L',change:'+15.8%',up:true,orders:410,returns:4,adspend:'₹4.6K',profit:'₹98.7K',live:false},
+  {name:'MNow',abbr:'MN',color:'#059669',revenue:'₹4.39L',change:'+18.8%',up:true,orders:316,returns:8,adspend:'₹3.4K',profit:'₹92.1K',live:false},
+];
+
+function buildPlatCards(){
+  document.getElementById('platform-cards').innerHTML=PLATS.map((p,i)=>`
+    <div class="plat-card${i===0?' selected':''}" onclick="selectPlat(${i},this)">
+      <div class="plat-av" style="background:${p.color}">${p.abbr}</div>
+      <div class="plat-name">${p.name}</div>
+      <div class="plat-change ${p.up?'up':'dn'}">${p.change}</div>
+      <div class="plat-val">${p.revenue}</div>
+      <div class="plat-source ${p.live?'live':'manual'}">${p.live?'📡 Live':'✏️ Manual'}</div>
+    </div>`).join('');
+}
+
+let platChart=null;
+function selectPlat(i,el){
+  document.querySelectorAll('.plat-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');
+  const p=PLATS[i];
+  document.getElementById('plat-chart-title').textContent=p.name+(p.live?' (Live)':' (Sample)');
+  document.getElementById('plat-orders').textContent=p.orders;
+  document.getElementById('plat-returns').textContent=p.returns;
+  document.getElementById('plat-adspend').textContent=p.adspend;
+  document.getElementById('plat-profit').textContent=p.profit;
+  if(platChart)platChart.destroy();
+  const ctx=document.getElementById('plat-trend').getContext('2d');
+  platChart=new Chart(ctx,{type:'line',data:{labels:dateLabels(14),datasets:[{data:Array.from({length:14},()=>Math.floor(Math.random()*22000)+6000),borderColor:p.color,backgroundColor:p.color+'18',fill:true,tension:.4,pointRadius:2,pointBackgroundColor:p.color,borderWidth:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`₹${c.raw.toLocaleString('en-IN')}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#9ca3af',maxRotation:45}},y:{grid:{color:'#f3f4f6'},ticks:{callback:v=>`₹${(v/1000).toFixed(0)}K`,font:{size:9},color:'#9ca3af'}}}}});
+}
+
+// SKU
+const SKUS={
+  profit:[{code:'SKU-1042',name:'Face Wash 100ml',rev:'₹1.8L',val:'38%',plat:'Amazon'},{code:'SKU-3041',name:'Night Cream 50g',rev:'₹1.4L',val:'42%',plat:'Nykaa'},{code:'SKU-2021',name:'Vitamin C Serum',rev:'₹1.2L',val:'45%',plat:'Multiple'},{code:'SKU-4012',name:'Lip Balm Pack 3',rev:'₹0.9L',val:'52%',plat:'Myntra'}],
+  loss:[{code:'SKU-5081',name:'Body Lotion 500ml',rev:'₹22K',val:'-8%',plat:'Flipkart'},{code:'SKU-6022',name:'Shampoo Combo',rev:'₹18K',val:'-12%',plat:'Amazon'},{code:'SKU-7011',name:'Face Pack 100g',rev:'₹14K',val:'-5%',plat:'TataCliq'}],
+  blocked:[{code:'SKU-1042',name:'Face Wash',rev:'₹12.6K/day',val:'Content Issue',plat:'Amazon'},{code:'SKU-2021',name:'Vit C Serum',rev:'₹3.2K/day',val:'Price Policy',plat:'Flipkart'},{code:'SKU-3041',name:'Night Cream',rev:'₹1.9K/day',val:'Image Issue',plat:'Nykaa'}],
+  potential:[{code:'SKU-2090',name:'Body Butter',rev:'Trending',val:'Not in FC',plat:'All'},{code:'SKU-3104',name:'Eye Cream',rev:'High Demand',val:'FC needed',plat:'All'}]
+};
+const SKU_T={profit:'Profit Making SKUs',loss:'Loss Making SKUs',blocked:'Blocked Listings',potential:'Potential SKUs'};
+function skuTab(type,el){
+  document.querySelectorAll('.sku-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.getElementById('sku-title').textContent=SKU_T[type];
+  document.getElementById('sku-tbody').innerHTML=SKUS[type].map(r=>{
+    const cls=r.val.startsWith('-')?'br':r.val.includes('Issue')||r.val.includes('Policy')?'br':r.val.includes('FC')||r.val.includes('needed')?'bb':'bg';
+    return`<tr><td class="sku-code">${r.code}</td><td><b>${r.name}</b></td><td>${r.rev}</td><td><span class="badge ${cls}">${r.val}</span></td><td>${r.plat}</td></tr>`;
+  }).join('');
+}
+
+// TARGETS
+const TGTS=[{name:'Swiggy',abbr:'Sw',color:'#f97316',ach:3.93,tgt:2.21,pct:178},{name:'Zepto',abbr:'Ze',color:'#7c3aed',ach:6.14,tgt:4.20,pct:146},{name:'Flipkart',abbr:'Fl',color:'#2563eb',ach:5.79,tgt:3.97,pct:146},{name:'FirstCry',abbr:'Fi',color:'#ea580c',ach:3.34,tgt:2.64,pct:126},{name:'TataCliq',abbr:'Ta',color:'#dc2626',ach:2.24,tgt:2.62,pct:86},{name:'MNow',abbr:'MN',color:'#059669',ach:3.17,tgt:4.20,pct:75},{name:'JioMart',abbr:'Ji',color:'#1d4ed8',ach:4.85,tgt:6.62,pct:73},{name:'Website',abbr:'We',color:'#0f766e',ach:4.49,tgt:6.48,pct:69},{name:'Myntra',abbr:'My',color:'#7c3aed',ach:1.50,tgt:3.19,pct:47},{name:'Amazon',abbr:'Am',color:'#f59e0b',ach:2.16,tgt:7.68,pct:28},{name:'Nykaa',abbr:'Ny',color:'#db2777',ach:2.01,tgt:7.48,pct:27},{name:'Blinkit',abbr:'Bl',color:'#ca8a04',ach:1.20,tgt:5.78,pct:21}];
+function pCtColor(p){return p>=100?'var(--green)':p>=70?'#d97706':p>=40?'#ea580c':'var(--red)';}
+function buildTargets(){
+  document.getElementById('target-grid').innerHTML=TGTS.map(t=>`
+    <div class="tcard"><div class="tc-top">
+      <div class="tc-name"><div class="plat-av" style="background:${t.color};width:22px;height:22px;font-size:8px;border-radius:5px;margin-bottom:0">${t.abbr}</div>${t.name}</div>
+      <div class="tc-pct" style="color:${pCtColor(t.pct)}">${t.pct}%</div>
+    </div>
+    <div class="tc-amounts">₹${t.ach}L / ₹${t.tgt}L</div>
+    <div class="prog-track"><div class="prog-fill" style="width:${Math.min(t.pct,100)}%;background:${t.color}"></div></div>
+    </div>`).join('');
+  document.getElementById('target-modal-body').innerHTML=TGTS.map(t=>`
+    <div class="modal-field"><label>${t.name} (₹L)</label><input type="number" value="${t.tgt}" step="0.1" inputmode="decimal"></div>`).join('');
+}
+
+// TOAST
+function showToast(msg,type=''){
+  const t=document.createElement('div');t.className='toast '+(type||'');t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
+}
+
+// INIT
+function initDashboard(){
+  initTrendChart();
+  initDonut();
+  buildPlatCards();
+  setTimeout(()=>selectPlat(0,document.querySelector('.plat-card')),150);
+  skuTab('profit',document.querySelector('.sku-tab'));
+  buildTargets();
+  document.getElementById('inp-date').value=new Date().toISOString().split('T')[0];
+  checkBackend();
+}
+
+// Modals close on overlay tap
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
+
+// Swipe down to close modal
+let touchStartY=0;
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY;},{passive:true});
+  m.addEventListener('touchmove',e=>{
+    const diff=e.touches[0].clientY-touchStartY;
+    if(diff>80){m.closest('.modal-overlay').classList.remove('open');}
+  },{passive:true});
+});
+</script>
+</body>
+</html>
